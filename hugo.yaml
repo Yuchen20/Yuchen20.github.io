@@ -1,0 +1,18 @@
+baseURL: https://example.org/
+languageCode: en-us
+title: Yuchen's Blog 
+theme: ["PaperMod"]
+
+params:
+  homeInfoParams:
+    Title: Hi there wave
+    Content: This is just a summarizing blog, survey ideas seen.
+
+  socialIcons:
+    - name: "X"
+      url: "https://twitter.com/Johnmao22297801"
+    - name: "Kaggle"
+      url: "https://www.kaggle.com/yuchen2066"
+
+  busuanzi:
+    enable: true

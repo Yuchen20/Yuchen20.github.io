@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Yuchen&#39;s Blog</title>
+    <link>http://localhost:1313/</link>
+    <description>Recent content on Yuchen&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 08 Mar 2024 13:45:00 +0000</lastBuildDate>
+    <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Low Rank Adaptation and all its variansts</title>
+      <link>http://localhost:1313/posts/low-rank-adaptation/</link>
+      <pubDate>Fri, 08 Mar 2024 13:45:00 +0000</pubDate>
+      <guid>http://localhost:1313/posts/low-rank-adaptation/</guid>
+      <description>This works is a wrapping up work that conclude all paper around LoRA I&amp;rsquo;ve seen to develop SeLoRA. The variants of LoRA included does not include
+Low Rank Adaptation Low Rank Adaptation (LoRA), initially designed for Large Language Models (LLMs), has later been popularized by the Stable Diffusion community due to its fascinating ability to efficiently learn a style from only a few images. Pre-trained foundational model with billions of parameters</description>
+    </item>
+  </channel>
+</rss>

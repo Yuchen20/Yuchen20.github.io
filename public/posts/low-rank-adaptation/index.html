@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>Low Rank Adaptation and all its variansts | Yuchen&#39;s Blog</title>
+<meta name="keywords" content="">
+<meta name="description" content="This works is a wrapping up work that conclude all paper around LoRA I&rsquo;ve seen to develop SeLoRA. The variants of LoRA included does not include
+Low Rank Adaptation Low Rank Adaptation (LoRA), initially designed for Large Language Models (LLMs), has later been popularized by the Stable Diffusion community due to its fascinating ability to efficiently learn a style from only a few images. Pre-trained foundational model with billions of parameters">
+<meta name="author" content="Yuchen Mao">
+<link rel="canonical" href="http://localhost:1313/posts/low-rank-adaptation/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.cae5e01980b93eb34b803b47ece6e55774656b4fae59ce9c0a03e990843530b1.css" integrity="sha256-yuXgGYC5PrNLgDtH7OblV3Rla0&#43;uWc6cCgPpkIQ1MLE=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/low-rank-adaptation/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css"
+    integrity="sha384-MlJdn/WNKDGXveldHDdyRP1R4CTHr3FeuDNfhsLPYrq2t0UBkUdK2jyTnXPEK1NQ"
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer">
+
+<script
+    defer
+    src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js"
+    integrity="sha384-VQ8d8WVFw0yHhCk5E8I86oOhv48xLpnDZx5T9GogA/Y84DcCKWXDmSDfn13bzFZY"
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+    type="text/javascript"></script>
+
+<script
+    defer
+    src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js"
+    integrity="sha384-+XBljXPPiv+OzfbB3cVmLHf4hdUFHlWNZN5spNQ7rmHTXpd7WvJum6fIACpNNfIR"
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+    type="text/javascript"></script>
+
+<script type="text/javascript">
+  document.addEventListener("DOMContentLoaded", function() {
+    renderMathInElement(document.body, {
+      delimiters: [
+        {left: "$$", right: "$$", display: true},
+        {left: "\\[", right: "\\]", display: true},
+        {left: "$", right: "$", display: false},
+        {left: "\\(", right: "\\)", display: false},
+      ],
+    });
+  });
+</script>
+
+
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<link href="https://fonts.cdnfonts.com/css/ibm-plex-sans" rel="stylesheet">
+                
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:1313/" accesskey="h" title="Yuchen&#39;s Blog (Alt + H)">Yuchen&#39;s Blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+                <ul class="lang-switch"><li>|</li>
+                </ul>
+            </div>
+        </div>
+        <ul id="menu">
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="http://localhost:1313/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/posts/">Posts</a></div>
+    <h1 class="post-title entry-hint-parent">
+      Low Rank Adaptation and all its variansts
+    </h1>
+    <div class="post-meta"><span title='2024-03-08 13:45:00 +0000 UTC'>March 8, 2024</span>&nbsp;·&nbsp;5 min&nbsp;·&nbsp;908 words&nbsp;·&nbsp;Yuchen Mao
+
+</div>
+
+  </header> <aside id="toc-container" class="toc-container wide">
+    <div class="toc">
+        <details >
+            <summary accesskey="c" title="(Alt + C)">
+                <span class="details">Table of Contents</span>
+            </summary>
+
+            <div class="inner"><ul>
+                    <li>
+                        <a href="#low-rank-adaptation" aria-label="Low Rank Adaptation">Low Rank Adaptation</a><ul>
+                            
+                    <li>
+                        <a href="#loras-history-and-branches" aria-label="LoRA&amp;rsquo;s history and branches">LoRA&rsquo;s history and branches</a></li>
+                    <li>
+                        <a href="#loras-history-and-branches-1" aria-label="LoRA&amp;rsquo;s History and Branches">LoRA&rsquo;s History and Branches</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#minimizing-trainable-parameters" aria-label="Minimizing Trainable Parameters">Minimizing Trainable Parameters</a><ul>
+                            
+                    <li>
+                        <a href="#product-rule" aria-label="Product Rule">Product Rule</a><ul>
+                            
+                    <li>
+                        <a href="#krona" aria-label="KronA">KronA</a>
+                    </li>
+                </ul>
+                </li>
+                </ul>
+                </li>
+                </ul>
+            </div>
+        </details>
+    </div>
+</aside>
+<script>
+    let activeElement;
+    let elements;
+    window.addEventListener('DOMContentLoaded', function (event) {
+        checkTocPosition();
+
+        elements = document.querySelectorAll('h1[id],h2[id],h3[id],h4[id],h5[id],h6[id]');
+         
+         activeElement = elements[0];
+         const id = encodeURI(activeElement.getAttribute('id')).toLowerCase();
+         document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+     }, false);
+
+    window.addEventListener('resize', function(event) {
+        checkTocPosition();
+    }, false);
+
+    window.addEventListener('scroll', () => {
+        
+        activeElement = Array.from(elements).find((element) => {
+            if ((getOffsetTop(element) - window.pageYOffset) > 0 && 
+                (getOffsetTop(element) - window.pageYOffset) < window.innerHeight/2) {
+                return element;
+            }
+        }) || activeElement
+
+        elements.forEach(element => {
+             const id = encodeURI(element.getAttribute('id')).toLowerCase();
+             if (element === activeElement){
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+             } else {
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.remove('active');
+             }
+         })
+     }, false);
+
+    const main = parseInt(getComputedStyle(document.body).getPropertyValue('--article-width'), 10);
+    const toc = parseInt(getComputedStyle(document.body).getPropertyValue('--toc-width'), 10);
+    const gap = parseInt(getComputedStyle(document.body).getPropertyValue('--gap'), 10);
+
+    function checkTocPosition() {
+        const width = document.body.scrollWidth;
+
+        if (width - main - (toc * 2) - (gap * 4) > 0) {
+            document.getElementById("toc-container").classList.add("wide");
+        } else {
+            document.getElementById("toc-container").classList.remove("wide");
+        }
+    }
+
+    function getOffsetTop(element) {
+        if (!element.getClientRects().length) {
+            return 0;
+        }
+        let rect = element.getBoundingClientRect();
+        let win = element.ownerDocument.defaultView;
+        return rect.top + win.pageYOffset;   
+    }
+</script>
+  <div class="post-content"><p><strong>This works is a wrapping up work that conclude all paper around LoRA I&rsquo;ve seen to develop SeLoRA. The variants of LoRA included does not include</strong></p>
+<h1 id="low-rank-adaptation">Low Rank Adaptation<a hidden class="anchor" aria-hidden="true" href="#low-rank-adaptation">#</a></h1>
+<p><a href="https://arxiv.org/abs/2106.09685">Low Rank Adaptation</a> (LoRA), initially designed for Large Language Models (LLMs), has later been popularized by the Stable Diffusion community due to its fascinating ability to efficiently learn a style from only a few images. Pre-trained foundational model with billions of parameters</p>
+<p>To adapt these Pre-trained foundational model</p>
+<p>LoRA faciliate efficient learning by fine-tuning a pre-trained modle with minimum number of trainable parameters, which is a parameter-efficient fine-tuning (PEFT) methods.To fine</p>
+<p>LoRA is a line of reasearch in parameter-efficient fine-tuning (PEFT) methods characterized by it&rsquo;s ability to fine-tune a pre-trained foundational models with a minimum number of trainable parameters, was developed upon the hypothesis that &rsquo;the weight update of fine-tuning a downstream task on a pre-trained model exhibits a <strong>low intrinsic rank</strong>.&rsquo; To mimic the low-rank weight update while also making the training parameter-efficient, the author of LoRA proposed to freeze the entire pre-trained model and inject trainable low-rank decomposition matrices alongside linear layers expressed as:
+$$
+W = W_0 + AB
+$$
+where $W_0$ is the frozen pre-trianed weight, $A $ and $B$ are the trainable low rank decomposition matrices. Here, given a rank r, we have that $A \in \mathbb{R}^{d_{in}\times r}, B \in \mathbb{R}^{r \times d_{out}}$, where r is explicitly to be chosen to be small to satisfy the hypothesis of &rsquo;low rank&rsquo;. Notice that when the training is finished and before infering, the LoRA&rsquo;s $A, B$ matrices could merge back to the original weight by simple matrix product and addition, so now when infering, there is no latency introduced by LoRA. When the inference is finished, the mode could revert to it&rsquo;s original weight by simply subtracting the $AB$ matrix from the modified weight.</p>
+<p>In practice, the rank of <em>LoRA</em> is chosen to be in one of $4, 8, 64$, and is injected alongside with the $q$ and $k$ layer of the attention module of LLMs.</p>
+<figure class="align-center ">
+    <img loading="lazy" src="low-rank-adaptation.png#center" width="300px"/> 
+</figure>
+
+<h2 id="loras-history-and-branches">LoRA&rsquo;s history and branches<a hidden class="anchor" aria-hidden="true" href="#loras-history-and-branches">#</a></h2>
+<h2 id="loras-history-and-branches-1">LoRA&rsquo;s History and Branches<a hidden class="anchor" aria-hidden="true" href="#loras-history-and-branches-1">#</a></h2>
+<p>Now that we&rsquo;ve introduced LoRA, let&rsquo;s briefly delve into the history of Parameter-Efficient Fine-Tuning (PEFT), highlighting the innovative methods that have emerged in its evolution. Tracing back the origins of PEFT methods, we first encounter <a href="https://arxiv.org/abs/2106.10199">BitFit</a>, which exclusively fine-tunes the bias term of a pretrained model. Following this, there is <a href="https://arxiv.org/abs/2210.08823">Scaling &amp; Shifting Your Features</a>, where the output result of each operation of the pretrained model is scaled and shifted by two weight matrices, as described by the equation:
+$$
+y = \gamma \cdot x + \beta
+$$</p>
+<p>Subsequently, adapter methods were introduced, with a structure similar to LoRA injected after each selected operation of the model. However, in contrast to LoRA, adapters introduce a non-linear activation function between the two low-rank matrices, preventing the merging of weights but potentially enhancing performance through the introduced nonlinearity. The adapter approach has attracted numerous researchers, leading to the development of various methods within this framework.</p>
+<p>Another significant line of research is prompt tuning, which often involves adjusting the embedding layer or introducing a trainable embedding before the feature. Examples include visual prompt tuning, textual inversion, dream booth, and more. The history of PEFT methods is extensive, and the myriad groundbreaking methods we could mention are non-exhaustive. Here, we&rsquo;ve provided just a glimpse by listing a few to offer a taste of the diverse landscape.</p>
+<p>Now, As we have introduced LoRA itself, I want to briefly touch on the history of Parameter efficeint fine-tuning, toching on the innovative methods that have flourished in its wake.Back tracking the PEFT methods, initially, <a href="https://arxiv.org/abs/2106.10199">BitFit</a> was introduced, which only tunes the bias term of an pretrained model, then there is the <a href="https://arxiv.org/abs/2210.08823">Scaling &amp; Shifting Your Features</a> where the output result of each operation of the pretrained model is scaled and shifted by two weight matrices, described as
+$$
+y = \gamma \cdot x + \beta
+$$
+Later on, there was the adapter methods, where a structure just like LoRA was introudced after each operation of the model, however, differ from LoRA, it introudces a non-linear actiavtion funciton inbetween the two low rank matrices, which prevents the mergeing of weight, but possbility improves the performance due to the nonlinearity introduced. Adapter was another line of reaserach that have attracted many researchers to it, and many methods was developed upon it. Another line would be prompt tuning, that often ajust the embedding layer, or introduce a trainable embedding before the fetature, these could be seen from visual prompt tuning, textual inversion, dream booth&hellip; The history of PEFT methods is rich, and the eye-brashjing methods that we could mention is non-exhaustive, but here we just only list a few to give a taste.</p>
+<p>Now, we bring back to our focus &lsquo;LoRA&rsquo;, and it&rsquo;s variants. In essense, Further development upon LoRA could be categroize into a few lines of research:</p>
+<ul>
+<li>Minimizing the trainable parameters
+<ul>
+<li>Change Product Operation</li>
+<li>Quantization</li>
+<li>Weight Sharing</li>
+<li>Rank Pruning</li>
+</ul>
+</li>
+<li>Rank - Search free</li>
+<li>Inference Improvement</li>
+</ul>
+<p>Each of the direction of LoRA will be briefly introudced to have a view.</p>
+<h1 id="minimizing-trainable-parameters">Minimizing Trainable Parameters<a hidden class="anchor" aria-hidden="true" href="#minimizing-trainable-parameters">#</a></h1>
+<p>The Goal of minimizing trainable parameter not only leads more efficient training, in terms of memory, but also minimize the storage needed to store each individual LoRA. Designs to reduce trainable parameters often aims to minimize the number of trainabke parameter while keeping the performance the same.</p>
+<h2 id="product-rule">Product Rule<a hidden class="anchor" aria-hidden="true" href="#product-rule">#</a></h2>
+<h3 id="krona">KronA<a hidden class="anchor" aria-hidden="true" href="#krona">#</a></h3>
+<p>Paper: <a href="https://arxiv.org/abs/2212.10650">KronA: Parameter Efficient Tuning with Kronecker Adapter</a></p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+    </ul>
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+    <span>&copy; 2024 <a href="http://localhost:1313/">Yuchen&#39;s Blog</a></span>
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<span id="busuanzi_container">
+    &nbsp;
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+    
+    Site Views: <span id="busuanzi_value_site_pv"></span>
+</span>
+
+
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>

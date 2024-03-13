@@ -1,0 +1,47 @@
++++
+title = 'Low Rank Adaptation and all its variansts'
+date = 2024-03-08T13:45:00Z
+
+author = ["Yuchen Mao"]
+
+draft = false
+math             = 'katex'
+ShowToc          = true
+ShowBreadCrumbs  = true
+ShowPastNavLinks = true
+ShowSHareButtons = true
+ShowReadingTime  = true
+ShowWordCount    = true
++++
+**This works is a wrapping up work that conclude all paper around LoRA I've seen to develop SeLoRA. The variants of LoRA included does not include**
+# Main idea
+this is just the main idea
+## Low Rank Adaptation
+Low Rank Adapatation (*LoRA*), initially designed for Large Launguage Models (LLMs), are then been popularized by Stable diffusion community due to it's fascinating ability of efficiently learning a style from only a few images. LoRA was developed upon the hypothesis of 'the weight update of fine-tuning a down stream tasks on a pre-trained model exhibits a **low intrinsic rank**'. Hence, to mimic the low rank weight update while also make the training parameter efficient, the author of *LoRA* proposed to freeze the entire pre-trained model, and inject trainable low rank decomposition matrices alongside with linear layer to allow efficient fine-tuning. Thus, *LoRA* can be expressed as 
+$$
+W = W_0 + AB
+$$ 
+where $W_0$ is the frozen pre-trianed weight, $A $ and $B$ are the trainable low rank decomposition matrices. Here, given a rank r, we have that $A \in \mathbb{R}^{d_{in}\times r}, B \in \mathbb{R}^{r \times d_{out}}$, where r is explicitly to be chosen to be small to satisfy the hypothesis of 'low rank'.
+
+In practice, the rank of *LoRA* is chosen to be in one of $4, 8, 64$, and is injected alongside with the $q$ and $k$ layer of the attention module of LLMs.
+
+{{< figure src="low-rank-adaptation.png" align=center width=300px >}}
+
+Further development upon LoRA diverged into a few lines of research:
+
+- Minimizing the trainable parameters
+    - Change Product Operation
+    - Quantization
+    - Weight Sharing
+    - Rank Pruning
+- Rank - Search free
+- Inference Improvement
+
+Each of the direction of LoRA will be briefly introudced to have a view.
+
+## Minimizing Trainable Parameters
+The Goal of minimizing trainable parameter not only leads more efficient training, in terms of memory, but also minimize the storage needed to store each individual LoRA. Designs to reduce trainable parameters often aims to minimize the number of trainabke parameter while keeping the performance the same. 
+
+### Product Rule
+#### KronA
+Paper: [KronA: Parameter Efficient Tuning with Kronecker Adapter](https://arxiv.org/abs/2212.10650)
