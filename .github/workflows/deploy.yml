@@ -29,14 +29,6 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 0
-      - name: Setup Pages
-        id: pages
-        uses: actions/configure-pages@v3
-        with:
-          enablement: true
-        env:
-          VERBOSE: true
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Get Theme
         run: git submodule update --init --recursive
       - name: Update theme to Latest commit
