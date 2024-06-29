@@ -5,10 +5,10 @@ date = 2024-03-08T13:45:00Z
 author = ["Yuchen Mao"]
 
 draft = false
-math             = 'katex'
+math  = 'katex'
 
 +++
-**This works is a wrapping up work that conclude all paper around LoRA I've seen to develop SeLoRA. The variants of LoRA included does not include**
+**This works is a wrapping up work that conclude all paper around LoRA I've read to develop SeLoRA. Note that the variants of LoRA included might not be comprehensive, and cut off around march 2024, but I hope this would give you an idea of what is LoRA, and what have already been accompolished in this.**
 
 
 # Low Rank Adaptation

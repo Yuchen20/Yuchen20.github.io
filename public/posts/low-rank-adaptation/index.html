@@ -7,7 +7,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Low Rank Adaptation and all its variansts | Yuchen&#39;s Blog</title>
 <meta name="keywords" content="">
-<meta name="description" content="This works is a wrapping up work that conclude all paper around LoRA I&rsquo;ve seen to develop SeLoRA. The variants of LoRA included does not include
+<meta name="description" content="This works is a wrapping up work that conclude all paper around LoRA I&rsquo;ve read to develop SeLoRA. Note that the variants of LoRA included might not be comprehensive, and cut off around march 2024, but I hope this would give you an idea of what is LoRA, and what have already been accompolished in this.
 Low Rank Adaptation Low Rank Adaptation (LoRA), a line of research under Parameter efficient Fine-Tuning (PEFT) methods, was initially designed for Large Language Models (LLMs), but has later been popularized by the Stable Diffusion community due to its fascinating ability of efficiently learning a style from only a few images.">
 <meta name="author" content="Yuchen Mao">
 <link rel="canonical" href="http://localhost:1313/posts/low-rank-adaptation/">
@@ -153,7 +153,7 @@ Low Rank Adaptation Low Rank Adaptation (LoRA), a line of research under Paramet
     <h1 class="post-title entry-hint-parent">
       Low Rank Adaptation and all its variansts
     </h1>
-    <div class="post-meta"><span title='2024-03-08 13:45:00 +0000 UTC'>March 8, 2024</span>&nbsp;·&nbsp;13 min&nbsp;·&nbsp;2721 words&nbsp;·&nbsp;Yuchen Mao
+    <div class="post-meta"><span title='2024-03-08 13:45:00 +0000 UTC'>March 8, 2024</span>&nbsp;·&nbsp;13 min&nbsp;·&nbsp;2751 words&nbsp;·&nbsp;Yuchen Mao
 
 </div>
 
@@ -271,7 +271,7 @@ Low Rank Adaptation Low Rank Adaptation (LoRA), a line of research under Paramet
         return rect.top + win.pageYOffset;   
     }
 </script>
-  <div class="post-content"><p><strong>This works is a wrapping up work that conclude all paper around LoRA I&rsquo;ve seen to develop SeLoRA. The variants of LoRA included does not include</strong></p>
+  <div class="post-content"><p><strong>This works is a wrapping up work that conclude all paper around LoRA I&rsquo;ve read to develop SeLoRA. Note that the variants of LoRA included might not be comprehensive, and cut off around march 2024, but I hope this would give you an idea of what is LoRA, and what have already been accompolished in this.</strong></p>
 <h1 id="low-rank-adaptation">Low Rank Adaptation<a hidden class="anchor" aria-hidden="true" href="#low-rank-adaptation">#</a></h1>
 <p><a href="https://arxiv.org/abs/2106.09685">Low Rank Adaptation</a> (LoRA), a line of research under Parameter efficient Fine-Tuning (PEFT) methods, was initially designed for Large Language Models (LLMs), but has later been popularized by the Stable Diffusion community due to its fascinating ability of efficiently learning a style from only a few images. As a PEFT method, <em>LoRA</em> not only comes with the advantage of allowing effcient fine-tuning, but also adds no additional inference time. <em>LoRA</em> achieves this by freezing the entire model and injecting trainable low-rank decomposition matrices alongside with each linear layer. This is built upon the hypothesis that the weight update during fine-tuning often exists an <strong>low intrinsic rank</strong>, thus a low-rank decomposition matrices could potentially mimic the weight changes with a few trainable parameters. Mathematically, all the linear weight matrices is replaced by:
 $$
