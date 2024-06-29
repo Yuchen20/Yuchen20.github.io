@@ -1,5 +1,5 @@
 +++
-title = 'Low Rank Adaptation and all its variansts'
+title = 'Low Rank Adaptation and its Variations'
 date = 2024-03-08T13:45:00Z
 
 author = ["Yuchen Mao"]
@@ -8,8 +8,7 @@ draft = false
 math  = 'katex'
 
 +++
-**This works is a wrapping up work that conclude all paper around LoRA I've read to develop SeLoRA. Note that the variants of LoRA included might not be comprehensive, and cut off around march 2024, but I hope this would give you an idea of what is LoRA, and what have already been accompolished in this.**
-
+{{< colour "#714285" "This works is a wrapping up project that conclude all the paper on LoRA that I have read to develop SeLoRA. Note that although the variants might not be comprehensive and it cut off around march 2024, I hope this would give you an idea of what is LoRA, and what have already been accompolished in this." >}}
 
 # Low Rank Adaptation
 [Low Rank Adaptation](https://arxiv.org/abs/2106.09685) (LoRA), a line of research under Parameter efficient Fine-Tuning (PEFT) methods, was initially designed for Large Language Models (LLMs), but has later been popularized by the Stable Diffusion community due to its fascinating ability of efficiently learning a style from only a few images. As a PEFT method, *LoRA* not only comes with the advantage of allowing effcient fine-tuning, but also adds no additional inference time. *LoRA* achieves this by freezing the entire model and injecting trainable low-rank decomposition matrices alongside with each linear layer. This is built upon the hypothesis that the weight update during fine-tuning often exists an **low intrinsic rank**, thus a low-rank decomposition matrices could potentially mimic the weight changes with a few trainable parameters. Mathematically, all the linear weight matrices is replaced by:

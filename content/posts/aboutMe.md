@@ -6,7 +6,7 @@ author = ["Yuchen Mao"]
 
 draft = false
 math  = 'katex'
-
+weight= 1
 +++
 
 I am a master's student pursuing an MPhil in Data Intensive Science at the University of Cambridge. My interests lie in computer vision, machine learning, and, particularly, in building efficient deep learning models. Previously, I studied Mathematics at the University of Edinburgh, where I had the privilege of working with [Prof. ChengJia Wang](https://chengjiawang.github.io/) on medical-related deep learning methods.
