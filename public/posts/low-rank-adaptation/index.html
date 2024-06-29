@@ -8,7 +8,7 @@
 <title>Low Rank Adaptation and all its variansts | Yuchen&#39;s Blog</title>
 <meta name="keywords" content="">
 <meta name="description" content="This works is a wrapping up work that conclude all paper around LoRA I&rsquo;ve seen to develop SeLoRA. The variants of LoRA included does not include
-Low Rank Adaptation Low Rank Adaptation (LoRA), initially designed for Large Language Models (LLMs), has later been popularized by the Stable Diffusion community due to its fascinating ability to efficiently learn a style from only a few images. Pre-trained foundational model with billions of parameters">
+Low Rank Adaptation Low Rank Adaptation (LoRA), a line of research under Parameter efficient Fine-Tuning (PEFT) methods, was initially designed for Large Language Models (LLMs), but has later been popularized by the Stable Diffusion community due to its fascinating ability of efficiently learning a style from only a few images.">
 <meta name="author" content="Yuchen Mao">
 <link rel="canonical" href="http://localhost:1313/posts/low-rank-adaptation/">
 <link crossorigin="anonymous" href="/assets/css/stylesheet.cae5e01980b93eb34b803b47ece6e55774656b4fae59ce9c0a03e990843530b1.css" integrity="sha256-yuXgGYC5PrNLgDtH7OblV3Rla0&#43;uWc6cCgPpkIQ1MLE=" rel="preload stylesheet" as="style">
@@ -153,13 +153,13 @@ Low Rank Adaptation Low Rank Adaptation (LoRA), initially designed for Large Lan
     <h1 class="post-title entry-hint-parent">
       Low Rank Adaptation and all its variansts
     </h1>
-    <div class="post-meta"><span title='2024-03-08 13:45:00 +0000 UTC'>March 8, 2024</span>&nbsp;·&nbsp;5 min&nbsp;·&nbsp;908 words&nbsp;·&nbsp;Yuchen Mao
+    <div class="post-meta"><span title='2024-03-08 13:45:00 +0000 UTC'>March 8, 2024</span>&nbsp;·&nbsp;13 min&nbsp;·&nbsp;2721 words&nbsp;·&nbsp;Yuchen Mao
 
 </div>
 
   </header> <aside id="toc-container" class="toc-container wide">
     <div class="toc">
-        <details >
+        <details  open>
             <summary accesskey="c" title="(Alt + C)">
                 <span class="details">Table of Contents</span>
             </summary>
@@ -169,21 +169,42 @@ Low Rank Adaptation Low Rank Adaptation (LoRA), initially designed for Large Lan
                         <a href="#low-rank-adaptation" aria-label="Low Rank Adaptation">Low Rank Adaptation</a><ul>
                             
                     <li>
-                        <a href="#loras-history-and-branches" aria-label="LoRA&amp;rsquo;s history and branches">LoRA&rsquo;s history and branches</a></li>
+                        <a href="#history" aria-label="History">History</a></li>
                     <li>
-                        <a href="#loras-history-and-branches-1" aria-label="LoRA&amp;rsquo;s History and Branches">LoRA&rsquo;s History and Branches</a></li></ul>
+                        <a href="#variants-of-lora" aria-label="Variants of LoRA">Variants of LoRA</a></li></ul>
                     </li>
                     <li>
-                        <a href="#minimizing-trainable-parameters" aria-label="Minimizing Trainable Parameters">Minimizing Trainable Parameters</a><ul>
+                        <a href="#further-reduction-of-trainable-parameters" aria-label="Further Reduction of Trainable Parameters">Further Reduction of Trainable Parameters</a><ul>
                             
                     <li>
-                        <a href="#product-rule" aria-label="Product Rule">Product Rule</a><ul>
+                        <a href="#alteration-of-product-operation" aria-label="Alteration of Product Operation">Alteration of Product Operation</a><ul>
                             
                     <li>
-                        <a href="#krona" aria-label="KronA">KronA</a>
+                        <a href="#krona" aria-label="KronA">KronA</a></li>
+                    <li>
+                        <a href="#lycoris" aria-label="LyCORIS">LyCORIS</a></li></ul>
                     </li>
-                </ul>
-                </li>
+                    <li>
+                        <a href="#weight-sharing" aria-label="Weight Sharing">Weight Sharing</a><ul>
+                            
+                    <li>
+                        <a href="#vera" aria-label="VeRA">VeRA</a></li>
+                    <li>
+                        <a href="#tied-lora" aria-label="Tied-LoRA">Tied-LoRA</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#quantization" aria-label="Quantization">Quantization</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#rank-pruning" aria-label="Rank Pruning">Rank Pruning</a><ul>
+                            
+                    <li>
+                        <a href="#dylora" aria-label="DyLoRA">DyLoRA</a></li>
+                    <li>
+                        <a href="#adalora" aria-label="AdaLoRA">AdaLoRA</a></li>
+                    <li>
+                        <a href="#sora" aria-label="SoRA">SoRA</a>
+                    </li>
                 </ul>
                 </li>
                 </ul>
@@ -252,51 +273,210 @@ Low Rank Adaptation Low Rank Adaptation (LoRA), initially designed for Large Lan
 </script>
   <div class="post-content"><p><strong>This works is a wrapping up work that conclude all paper around LoRA I&rsquo;ve seen to develop SeLoRA. The variants of LoRA included does not include</strong></p>
 <h1 id="low-rank-adaptation">Low Rank Adaptation<a hidden class="anchor" aria-hidden="true" href="#low-rank-adaptation">#</a></h1>
-<p><a href="https://arxiv.org/abs/2106.09685">Low Rank Adaptation</a> (LoRA), initially designed for Large Language Models (LLMs), has later been popularized by the Stable Diffusion community due to its fascinating ability to efficiently learn a style from only a few images. Pre-trained foundational model with billions of parameters</p>
-<p>To adapt these Pre-trained foundational model</p>
-<p>LoRA faciliate efficient learning by fine-tuning a pre-trained modle with minimum number of trainable parameters, which is a parameter-efficient fine-tuning (PEFT) methods.To fine</p>
-<p>LoRA is a line of reasearch in parameter-efficient fine-tuning (PEFT) methods characterized by it&rsquo;s ability to fine-tune a pre-trained foundational models with a minimum number of trainable parameters, was developed upon the hypothesis that &rsquo;the weight update of fine-tuning a downstream task on a pre-trained model exhibits a <strong>low intrinsic rank</strong>.&rsquo; To mimic the low-rank weight update while also making the training parameter-efficient, the author of LoRA proposed to freeze the entire pre-trained model and inject trainable low-rank decomposition matrices alongside linear layers expressed as:
+<p><a href="https://arxiv.org/abs/2106.09685">Low Rank Adaptation</a> (LoRA), a line of research under Parameter efficient Fine-Tuning (PEFT) methods, was initially designed for Large Language Models (LLMs), but has later been popularized by the Stable Diffusion community due to its fascinating ability of efficiently learning a style from only a few images. As a PEFT method, <em>LoRA</em> not only comes with the advantage of allowing effcient fine-tuning, but also adds no additional inference time. <em>LoRA</em> achieves this by freezing the entire model and injecting trainable low-rank decomposition matrices alongside with each linear layer. This is built upon the hypothesis that the weight update during fine-tuning often exists an <strong>low intrinsic rank</strong>, thus a low-rank decomposition matrices could potentially mimic the weight changes with a few trainable parameters. Mathematically, all the linear weight matrices is replaced by:
 $$
-W = W_0 + AB
+W = W_{0} + \frac{\alpha}{r}AB
 $$
-where $W_0$ is the frozen pre-trianed weight, $A $ and $B$ are the trainable low rank decomposition matrices. Here, given a rank r, we have that $A \in \mathbb{R}^{d_{in}\times r}, B \in \mathbb{R}^{r \times d_{out}}$, where r is explicitly to be chosen to be small to satisfy the hypothesis of &rsquo;low rank&rsquo;. Notice that when the training is finished and before infering, the LoRA&rsquo;s $A, B$ matrices could merge back to the original weight by simple matrix product and addition, so now when infering, there is no latency introduced by LoRA. When the inference is finished, the mode could revert to it&rsquo;s original weight by simply subtracting the $AB$ matrix from the modified weight.</p>
-<p>In practice, the rank of <em>LoRA</em> is chosen to be in one of $4, 8, 64$, and is injected alongside with the $q$ and $k$ layer of the attention module of LLMs.</p>
+where $W_{0}$ is the frozen original weight and $A$ and $B$ are the trainable low-rank decomposition matrices. $\alpha$ is a hyperparameter that scales the initial weight to match the magnitude of $W_{0}$, allowing the fine-tuning to be more efficient. Here, given a rank r, we have that $A \in \mathbb{R}^{d_{in}\times r}, B \in \mathbb{R}^{r \times d_{out}}$, where r is explicitly chosen to be small, such that the hypothesis of &rsquo;low intrinsic rank&rsquo; is satisfied. In practice, a rank of $4$ will often be sufficient and since <em>LoRA</em> is often only injected to the &lsquo;q&rsquo; and &lsquo;k&rsquo; layer of the Attention layer, the total trainable parameter often only constitute a fraction of the total number of parameters.</p>
+<p>Notice that when the fine-tuning is finished, the <em>LoRA</em>&rsquo;s $A, B$ matrices could merge into the original weight by simple matrix product. Now the model looks just like the model went through a full fine-tuning, and thus it have the same inference time as the original model. When the inference is done, the model could again revert to it&rsquo;s original weights by simply subtracting the $AB$ matrix from the modified weight.</p>
 <figure class="align-center ">
-    <img loading="lazy" src="low-rank-adaptation.png#center" width="300px"/> 
+    <img loading="lazy" src="low-rank-adaptation.png#center"
+         alt="Fig. 1. LoRA when injected into a linear layer. (Image source: Hu, Edward J., et al. 2021)" width="300px"/> <figcaption>
+            <p>Fig. 1. <em>LoRA</em> when injected into a linear layer. (Image source: <a href="https://arxiv.org/abs/2106.09685">Hu, Edward J., et al. 2021</a>)</p>
+        </figcaption>
 </figure>
 
-<h2 id="loras-history-and-branches">LoRA&rsquo;s history and branches<a hidden class="anchor" aria-hidden="true" href="#loras-history-and-branches">#</a></h2>
-<h2 id="loras-history-and-branches-1">LoRA&rsquo;s History and Branches<a hidden class="anchor" aria-hidden="true" href="#loras-history-and-branches-1">#</a></h2>
-<p>Now that we&rsquo;ve introduced LoRA, let&rsquo;s briefly delve into the history of Parameter-Efficient Fine-Tuning (PEFT), highlighting the innovative methods that have emerged in its evolution. Tracing back the origins of PEFT methods, we first encounter <a href="https://arxiv.org/abs/2106.10199">BitFit</a>, which exclusively fine-tunes the bias term of a pretrained model. Following this, there is <a href="https://arxiv.org/abs/2210.08823">Scaling &amp; Shifting Your Features</a>, where the output result of each operation of the pretrained model is scaled and shifted by two weight matrices, as described by the equation:
+<h2 id="history">History<a hidden class="anchor" aria-hidden="true" href="#history">#</a></h2>
+<p>Now that we&rsquo;ve introduced LoRA, let&rsquo;s briefly delve into the history of Parameter-Efficient Fine-Tunin, toching on the innovative methods that have flourished in its wake. Tracing back the origins of PEFT methods, we first encounter <em><a href="https://arxiv.org/abs/2106.10199">BitFit</a></em>, which exclusively fine-tunes the bias term of a pretrained model. Following this, there is <em><a href="https://arxiv.org/abs/2210.08823">Scaling &amp; Shifting Your Features</a></em>, where each operation of the pretrained model is scaled and shifted by two weight matrices, described by:
 $$
 y = \gamma \cdot x + \beta
 $$</p>
-<p>Subsequently, adapter methods were introduced, with a structure similar to LoRA injected after each selected operation of the model. However, in contrast to LoRA, adapters introduce a non-linear activation function between the two low-rank matrices, preventing the merging of weights but potentially enhancing performance through the introduced nonlinearity. The adapter approach has attracted numerous researchers, leading to the development of various methods within this framework.</p>
-<p>Another significant line of research is prompt tuning, which often involves adjusting the embedding layer or introducing a trainable embedding before the feature. Examples include visual prompt tuning, textual inversion, dream booth, and more. The history of PEFT methods is extensive, and the myriad groundbreaking methods we could mention are non-exhaustive. Here, we&rsquo;ve provided just a glimpse by listing a few to offer a taste of the diverse landscape.</p>
-<p>Now, As we have introduced LoRA itself, I want to briefly touch on the history of Parameter efficeint fine-tuning, toching on the innovative methods that have flourished in its wake.Back tracking the PEFT methods, initially, <a href="https://arxiv.org/abs/2106.10199">BitFit</a> was introduced, which only tunes the bias term of an pretrained model, then there is the <a href="https://arxiv.org/abs/2210.08823">Scaling &amp; Shifting Your Features</a> where the output result of each operation of the pretrained model is scaled and shifted by two weight matrices, described as
-$$
-y = \gamma \cdot x + \beta
-$$
-Later on, there was the adapter methods, where a structure just like LoRA was introudced after each operation of the model, however, differ from LoRA, it introudces a non-linear actiavtion funciton inbetween the two low rank matrices, which prevents the mergeing of weight, but possbility improves the performance due to the nonlinearity introduced. Adapter was another line of reaserach that have attracted many researchers to it, and many methods was developed upon it. Another line would be prompt tuning, that often ajust the embedding layer, or introduce a trainable embedding before the fetature, these could be seen from visual prompt tuning, textual inversion, dream booth&hellip; The history of PEFT methods is rich, and the eye-brashjing methods that we could mention is non-exhaustive, but here we just only list a few to give a taste.</p>
-<p>Now, we bring back to our focus &lsquo;LoRA&rsquo;, and it&rsquo;s variants. In essense, Further development upon LoRA could be categroize into a few lines of research:</p>
+<p>Subsequently, <em><a href="https://arxiv.org/abs/1902.00751">adapter</a></em> methods were introduced, with a structure similar to <em>LoRA</em> but is injected after each chosen operations of the model. In contrast to <em>LoRA</em>, adapters introduced a non-linear activation function between the two low-rank matrices, preventing the merging of weights but potentially could enhance the performance through the introduced nonlinearity. The adapter method is also widely explore, and could potentially be one of the main priation for <em>LoRA</em>.</p>
+<p>Another important line of research is prompt tuning, which often involves adjusting the embedding layer. Examples include <em><a href="https://arxiv.org/abs/2203.12119">visual prompt tuning</a></em>, <em><a href="https://arxiv.org/abs/2208.01618">textual inversion</a></em>, <em><a href="https://arxiv.org/abs/2208.12242">dream booth</a></em>, and more. The history of PEFT methods is extensive, and the myriad groundbreaking methods we could mention are non-exhaustive. Here, we&rsquo;ve provided just a glimpse by listing a few to offer a taste of the diverse landscape.</p>
+<h2 id="variants-of-lora">Variants of LoRA<a hidden class="anchor" aria-hidden="true" href="#variants-of-lora">#</a></h2>
+<p>Now that we&rsquo;ve introduced <em>LoRA</em> and discussed the history of PEFT methods, let&rsquo;s delve into some of the variants of <em>LoRA</em>. Essentially, further development of <em>LoRA</em> can be categorized into several lines of research:</p>
 <ul>
-<li>Minimizing the trainable parameters
+<li>
+<p>Further Reduction of Trainable Parameters</p>
 <ul>
-<li>Change Product Operation</li>
-<li>Quantization</li>
+<li>Alteration of Product Operation</li>
 <li>Weight Sharing</li>
-<li>Rank Pruning</li>
+<li>Quantization</li>
 </ul>
 </li>
-<li>Rank - Search free</li>
-<li>Inference Improvement</li>
+<li>
+<p>Rank Pruning</p>
+</li>
+<li>
+<p>Search Free Training (Sepecifically for Rank)</p>
+</li>
+<li>
+<p>Faster Inference with Multiple <em>LoRA</em></p>
+</li>
 </ul>
-<p>Each of the direction of LoRA will be briefly introudced to have a view.</p>
-<h1 id="minimizing-trainable-parameters">Minimizing Trainable Parameters<a hidden class="anchor" aria-hidden="true" href="#minimizing-trainable-parameters">#</a></h1>
-<p>The Goal of minimizing trainable parameter not only leads more efficient training, in terms of memory, but also minimize the storage needed to store each individual LoRA. Designs to reduce trainable parameters often aims to minimize the number of trainabke parameter while keeping the performance the same.</p>
-<h2 id="product-rule">Product Rule<a hidden class="anchor" aria-hidden="true" href="#product-rule">#</a></h2>
+<p>Each direction of <em>LoRA</em> will be briefly introduced to provide insight.</p>
+<h1 id="further-reduction-of-trainable-parameters">Further Reduction of Trainable Parameters<a hidden class="anchor" aria-hidden="true" href="#further-reduction-of-trainable-parameters">#</a></h1>
+<p>While <em>LoRA</em> has already achieved a remarkable reduction in the number of trainable parameters, the pursuit of minimizing trainable parameters continues. Further reduction not only enhances memory efficiency during fine-tuning but also conserves storage space, especially when <em>LoRA</em> is employed as a personalization tool. For instance, when one <em>LoRA</em>  is stored for each user, the space required for storing every user&rsquo;s <em>LoRA</em>  can still be significant. Therefore, to address this challenge , several methods have been proposed.</p>
+<h2 id="alteration-of-product-operation">Alteration of Product Operation<a hidden class="anchor" aria-hidden="true" href="#alteration-of-product-operation">#</a></h2>
+<p>This type of <em>LoRA</em> involves altering the product operation between the two low-rank weight matrices. By doing so, it often enables the multiplied matrices to explain more rank than the normal product operation would allow.</p>
 <h3 id="krona">KronA<a hidden class="anchor" aria-hidden="true" href="#krona">#</a></h3>
 <p>Paper: <a href="https://arxiv.org/abs/2212.10650">KronA: Parameter Efficient Tuning with Kronecker Adapter</a></p>
+<p><em>KronA</em> employs Kronecker product to replace the matrix product. Given $A \in \mathbb{R}^{m \times n}, B \in \mathbb{R}^{p \times q}$ matrices, the kronecker product of them can be expressed as:
+$$
+A \otimes B =
+\begin{pmatrix}
+A_{11} B &amp; \cdots &amp; A_{1n} B \\
+\vdots   &amp; \ddots &amp; \vdots   \\
+A_{m1}B  &amp; \cdots &amp; A_{mn}B
+\end{pmatrix}
+$$
+The advantage of kronecker product is that it preserves the rank, so this allows <em>KronA</em> to achieve even lower number of trainable parameter with large rank. The paper proposed two type of KronA, namely $KronA^B$ and $KronA^B_{res}$, expressed as:
+$$
+W_{KronA^B}  = W_{0} + s[A\otimes B]
+$$
+and
+$$
+W_{KronA^B_{res}} = W_{0} + s[A \otimes B] + I
+$$
+where $s$ is a hyperparameter, and $I$ is the identity matirx.
+<figure class="align-center ">
+    <img loading="lazy" src="KronA.png#center"
+         alt="Fig. 2. Two variants of KronA when injected into a linear layer. (Image source: Edalati, Ali, et al. 2022)" width="500px"/> <figcaption>
+            <p>Fig. 2. Two variants of KronA when injected into a linear layer. (Image source: <a href="https://arxiv.org/abs/2212.10650">Edalati, Ali, et al. 2022</a>)</p>
+        </figcaption>
+</figure>
+</p>
+<h3 id="lycoris">LyCORIS<a hidden class="anchor" aria-hidden="true" href="#lycoris">#</a></h3>
+<p>Paper: <a href="https://arxiv.org/abs/2309.14859">Navigating Text-To-Image Customization: From LyCORIS Fine-Tuning to Model Evaluation</a></p>
+<p>LyCORIS utilized both the Kronecker product mentioned above and Hadamard product to construct its <em>LoRA</em> variants. The Hadamard product is the simple element wise product, so
+$$
+A\odot B = \begin{pmatrix}
+A_{11} B_{11} &amp; \cdots &amp; A_{1n} B_{1n} \\
+\vdots   &amp; \ddots &amp; \vdots   \\
+A_{m1}B_{m1}  &amp; \cdots &amp; A_{mn}B_{mn}
+\end{pmatrix}
+$$</p>
+<p>Althoug Hadamard product seems to be simple, but this allows the upper bound on rank of the product of low rank matrix to increase from $2r$ to $r^2$. Notice that when $r &gt; 2$, we have $2r &lt; r^2$, which implies that the Hadamard product can again allow more rank to be expressed with a even lower number of trainable parmeter.</p>
+<p>In the paper, two varainats of <em>LoRA</em> is proposed, <em>LoHA</em> and <em>LoKr</em>, which can be expressed as
+$$
+W_{LoHA} = W_{0} + s[B_{1} A_{1}\odot B_{2}A_{2}]
+$$
+and
+$$
+W_{LoKr} = W_{0} + s[C \otimes (BA)]
+$$
+Here,$A, A_{1}, A_{2}, B, B_{1}, B_{2}$ are all low rank matrices, where $A_{1}, A_{2}, B_{1}, B_{2}$ all have shape defined just like a typical LoRA. For the low rank matrices $A$ and $B$, it have the shape of $A \in \mathbb{R}^{\frac{d_{in}}{f}\times r}, B \in \mathbb{R}^{r \times \frac{d_{out}}{f}}$. where $f$ is a hyperparameter. With $f$ and $r$, the shape of C is defined as
+$$
+C \in \mathbb{R}^{\max\{u \leq \min{f, \sqrt{d_{in}}} | d_{in} mod u = 0\}\times \max\{u \leq \min{f, \sqrt{d_{out}}} | d_{out} mod u = 0\}}.
+$$
+Although it seems really complicated, it is just defining the shape of C to be such that when it is timed with the shape of $AB$, it is equal to the original weihght&rsquo;s shape.
+<figure class="align-center ">
+    <img loading="lazy" src="Lycoris.png#center"
+         alt="Fig. 3. LoHA and LoKr (Image source: Yeh, Shih-Ying, et al.2024)" width="800px"/> <figcaption>
+            <p>Fig. 3. LoHA and LoKr (Image source: <a href="https://arxiv.org/abs/2309.14859">Yeh, Shih-Ying, et al.2024</a>)</p>
+        </figcaption>
+</figure>
+</p>
+<h2 id="weight-sharing">Weight Sharing<a hidden class="anchor" aria-hidden="true" href="#weight-sharing">#</a></h2>
+<p>Weight Sharing reduces the number of parameter by using a weight matrices that is shared across <em>LoRA</em> in different layer, and often include a unique scaling or bias weight for each <em>LoRA</em>, just like  <em><a href="https://arxiv.org/abs/2210.08823">Scaling &amp; Shifting Your Features</a></em>, to allow <em>LoRA</em> distinguish itself.</p>
+<h3 id="vera">VeRA<a hidden class="anchor" aria-hidden="true" href="#vera">#</a></h3>
+<p>Paper: <a href="https://arxiv.org/abs/2310.11454">VeRA: Vector-based Random Matrix Adaptation</a></p>
+<p><em>VeRA</em> initialize two <strong>random</strong> low-rank matrices that is shared across layer. Then, two scaling weights are inserted inbetween and after the two matrics. Mathematically, it can be expressed as:
+$$
+f_{VeRA}(x) = W_{0} x + \Lambda_{b}B\Lambda_{d}A x
+$$
+Here, $A, B$ are the randomly initialized low-rank matrices, and $\Lambda_{b} , \Lambda_{d}$ are the trainable diagonal weight matrices.</p>
+<p>The Goal of <em>VeRA</em> is to use the scaling weights to adapt to these random low-rank Matrices, thereby mimic the weight update during fine-tuning. Considering the fact that adpating to random matrices could be hard, the paper proposed that the low-rank doesn&rsquo;t really needs to be low rank, and can be even as large as $256$. This comes from the benefit that the number of parameter doesn&rsquo;t scales up as quickly as the Original <em>LoRA</em> when the rank is increased. For each <em>LoRA</em> with rank of r, <em>LoRA</em> will need $r (d_{in} + d_{out})$ number of trainable parameters, but VeRA only need $r + d_{out}$ number of trainable parameters, which doesn&rsquo;t really differs much when r is increased.
+<figure class="align-center ">
+    <img loading="lazy" src="VeRA.png#center"
+         alt="Fig. 4. VeRA when injected into a linear layer. (Image source: Kopiczko, Dawid J., et al. 2024)" width="300px"/> <figcaption>
+            <p>Fig. 4. VeRA when injected into a linear layer. (Image source: <a href="https://arxiv.org/abs/2212.10650">Kopiczko, Dawid J., et al. 2024</a>)</p>
+        </figcaption>
+</figure>
+</p>
+<h3 id="tied-lora">Tied-LoRA<a hidden class="anchor" aria-hidden="true" href="#tied-lora">#</a></h3>
+<p>Paper: <a href="https://arxiv.org/abs/2311.09578">Tied-Lora: Enhacing parameter efficiency of LoRA with weight tying</a></p>
+<p>Building upon <em>VeRA</em>, Tied-LoRA parametized its variant of LoRA as:
+$$
+W = W_{0} + vBuA
+$$
+where $A, B$ are the low rank weight matrices, and $u, v$ are the scaling weights. Tied-LoRA explored all combinations of applying techniques of <strong>shared weight</strong> and <strong>frozen weight</strong> on $A, B, u, v$. Notice that the original <em>LoRA</em> is just when the $u, v$ matrces are frozen and equals to identity matrix. <em>VeRA</em> is just when $A, B$ matrices are frozen and random.</p>
+<p>The result shows that the original design of <em>LoRA</em> always have the best performance, and LoRA with shared $A, B$ weigths have the secondary performance. More comprehensive result on other combination of <strong>weight sharing</strong> and <strong>frozen weight</strong> can be seen in the paper.</p>
+<h2 id="quantization">Quantization<a hidden class="anchor" aria-hidden="true" href="#quantization">#</a></h2>
+<p>Paper: <a href="https://arxiv.org/abs/2305.14314">QLoRA: Efficient Finetuning of Quantized LLMs</a></p>
+<p><em>QLoRA</em> achieves lower memory usage during fine-tuning through quantization. It follows the same structure as <em>LoRA</em>, but changed all weights except the original weight to <strong>BF16</strong> data type. For the original weight, it is further quantized into <strong>4-bit NormalFloat</strong> datatype, where <strong>k-bit NormalFloat</strong> data type is proposed in this paper. <strong>k-bit NormalFloat</strong> follows from the assumption that the all pre-trained weight follows a normal distribution, so we can estimate the any number in the original weight with one of the $2^k$ values of $q_{i}$ through
+$$
+q_{i} = \frac{1}{2} \left( Q_{X} \left( \frac{i}{2^k+1} \right) + Q_{X}\left( \frac{i + 1}{2^k+1} \right) \right),
+$$
+where $Q_{X}$ is the quantile function of the standard normal distribution. Here, intuitively, we are just splitting the $\mathbb{R}$ line into $2^k$ sections and each section is assigned to a number in k-bit variable. Now, given a number in pre-trained weight that is also in $\mathbb{R}$, we can use a number in k-bit to encode it, and when we are decoding it, the proposed k-bit NormalFLoat Quantizaiton is the method that is the most accurate one.</p>
+<p>Additionally, <em>QLoRA</em> used double quantization, where the quantization constants of the quantization used to encode the original weight is furthor quantized into k-bit NormalFloat data type.</p>
+<p>Finally, <em>QLoRA</em> employs paged optimizer to avoid gradient checkpointing memory spikes when a mini-batch contains a large sequence.</p>
+<h1 id="rank-pruning">Rank Pruning<a hidden class="anchor" aria-hidden="true" href="#rank-pruning">#</a></h1>
+<p>Rank Pruninng or Adaptive rank type of <em>LoRA</em> operates on the idea that the optimal rank across different layer may be different, and the optimal rank itself is hard to search for. Hence, these methods often start with an initial rank, and prunes the rank during or after training. Hence, it could find the optimal rank more efficeintly, without iteratively training over LoRA with different rank.</p>
+<h2 id="dylora">DyLoRA<a hidden class="anchor" aria-hidden="true" href="#dylora">#</a></h2>
+<p>Paper:<a href="https://arxiv.org/abs/2210.07558">DyLoRA: Parameter Efficient Tuning of Pre-trained Models using Dynamic Search-Free Low-Rank Adaptation</a></p>
+<p><em>DyLoRA</em> is inspired by <em>Nested Dropout</em>, a variant of dropout. At each iteration, <em>Nested Dropout</em> samples a number $k$ and drops any element that its index is bigger then $k$. By doing so, <em>Nested Dropout</em> encourages the more important information to be kept in the first few indices. <em>DyLoRA</em> behaves similar to Nested Dropout, where at each iteration a number $b$ is sampled from $U[0, r]$, the rows and columns of the two low rank decomposition matrices with index larger then b is dropped for this iteration. During the backward propagation, <em>DyLoRA</em> introduced two mode:</p>
+<ol>
+<li><strong>Frozen Mode</strong>: Druing Frozen mode, only the row and column indexed with $b$ update the gradient, while all other weight are frozen. The author suggests that this could have a minor drawback on performance, but it can greatly boost the efficiency of <em>DyLoRA</em>.</li>
+<li><strong>Normal Mode</strong>: For Normal Mode, only the parameters that is used in the forward pass receives the gradients.</li>
+</ol>
+<figure class="align-center ">
+    <img loading="lazy" src="DyLoRA.png#center"
+         alt="Fig. 5. DyLoRA in its forward and backward pass. (Image source: Valipour, Mojtaba, et al. 2023)" width="500px"/> <figcaption>
+            <p>Fig. 5. DyLoRA in its forward and backward pass. (Image source: <a href="https://arxiv.org/abs/2212.10650">Valipour, Mojtaba, et al. 2023</a>)</p>
+        </figcaption>
+</figure>
+
+<p>When the training is finished, <em>DyLoRA</em> can keep all important information in columns and rows that have a smaller index. Thus, when searching for the optimal rank, it does not need to re-train the model. Instead it can search the rank by removing the column and rows with largest index, evaluate it, and then repeat this procedure until the rank reaches 0. Then an optimal rank can be find.</p>
+<h2 id="adalora">AdaLoRA<a hidden class="anchor" aria-hidden="true" href="#adalora">#</a></h2>
+<p>Paper:<a href="https://arxiv.org/abs/2303.10512">AdaLoRA: Adaptive Budget Allocation for Parameter-Ef cficient Fine-Tuning</a></p>
+<p><em>AdaLoRA</em> aims to answer the question of &lsquo;<strong>How can we allocate the parameter budget adaptively according to importance
+of modules to improve the performance of parameter-efficient fine-tuning?</strong>&rsquo;. To solve this, <em>AdaLoRA</em> is initialized with an uniform initial rank, and is gradually pruned to reach the targeted average rank during the fine-tuning. To achive this idea, we have to answer three more question, namely: &lsquo;How to Prune?&rsquo;, &lsquo;Where to Prune?&rsquo;, and &lsquo;When to Prune?&rsquo;</p>
+<p><strong>How to Prune?</strong>
+<em>AdaLoRA</em> decomposes the &rsquo;low intrinsic rank&rsquo; weight update matrix in the fashine of singular value decomposition (SVD), where it can be expressed as:
+$$
+W = W_{0} + A \Lambda B.
+$$
+$A, B$ are the low rank decomposition matrices as usual, and $\Lambda$ is a diagonal matrix with dimension of $r \times r$. Non-zero elements in $\Lambda$ is referred as singular value. Now, when pruning a rank $i$, the $i$th column of $A$, $i$th singular value, and $i$th row of $B$ are all been dropped.</p>
+<p><strong>Where to Prune?</strong>
+To facilitate affective pruning, <em>AdaLoRA</em> assigns a importance score to each rank. The importance score can be calculated via:</p>
+<ol>
+<li><strong>Magnitude of Singular Value</strong>: This approach just takes the absolute of the singular values, and the smallest one out of all will be pruned. The paper suggested that this approach could minimize the deviation from the original matrix and further stabilize the training.</li>
+<li><strong>Sensitive-based Importance</strong>: For each rank $i$, the score is defined as
+$$
+S_{i} = s(\Lambda_{i}) + \frac{1}{d_{in}}\sum_{j = 0}^{d_{in}} A_{ji} + \frac{1}{d_{out}}\sum_{j = 0}^{d_{out}} B_{ij},
+$$
+where s is the importance score for each element of the weight matrices, and is defined as:
+$$
+s(w_{ij}) = |w_{ij}\Delta_{w_{ij}}\mathcal{L}|.
+$$
+Now, when the importance score is below a threshould, the corresponding rank will be pruned.</li>
+</ol>
+<p><strong>When to Prune?</strong>
+The algorithm first starts with a few warmup rounds, and the rank is pruned to the targeted average rank through cubic schedule. After reaching the targeted average rank, the model is fine-tuned for another few rounds to make the model stabilize.</p>
+<h2 id="sora">SoRA<a hidden class="anchor" aria-hidden="true" href="#sora">#</a></h2>
+<p>Paper : <a href="https://arxiv.org/abs/2311.11696">Sparse Low-rank Adaptation of Pre-trained Language Models</a></p>
+<p>[Note]: Although termed with SoRA, this paper is not the viral text-to-vedio SoRA model from OpenAI.</p>
+<p>SoRA adds a gated vector in between the two low rank decomposition matrices, such that it forces the latent representation to be sparse. It is similar to AdaLoRA&rsquo;s formulation, but here the singular value is replaced by gated vector, and gated vector have its own update rule.</p>
+<p>Given a gated vector $g$, SoRA can be expressed as:
+$$
+W_{SoRA}= W_{0} + B(g\odot A).
+$$
+Notice that if we diagonalize $g$ it will just be the same as the singular value matrices $\Lambda$ in AdaLoRA.</p>
+<p>The gated vector $g$ have its own unique update rule, expressed as:</p>
+<p>$$
+g_{t+1} \leftarrow \mathcal{T_{\eta_{t} \cdot \lambda}} (g_{t} - \eta_{t} \Delta_{g}\mathcal{L_{0}}),
+$$
+where $T_{\eta_{t} \cdot \lambda}(\cdot)$ is a element wise soft threshould function:
+$$
+\mathcal{T_{\xi}}(x) = \begin{cases}
+x - \xi , \quad x &gt; \xi \\
+0 , \quad -\xi &lt; x \leq \xi \\
+x + \xi, x \leq - \xi
+\end{cases}
+$$
+where $\xi = \eta_{t} \cdot \lambda$, $\eta_{t}$ is the step-size in any epoch, and $\lambda$ is a hyper parameter promoting sparsity.</p>
+<p>After the training is complete, all the columns and rows of A, B aligned with the zeros element in the gated vector is pruned for efficiency.</p>
 
 
   </div>
@@ -304,6 +484,74 @@ Later on, there was the adapter methods, where a structure just like LoRA was in
   <footer class="post-footer">
     <ul class="post-tags">
     </ul>
+
+<ul class="share-buttons">
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share Low Rank Adaptation and all its variansts on x"
+            href="https://x.com/intent/tweet/?text=Low%20Rank%20Adaptation%20and%20all%20its%20variansts&amp;url=http%3a%2f%2flocalhost%3a1313%2fposts%2flow-rank-adaptation%2f&amp;hashtags=">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M512 62.554 L 512 449.446 C 512 483.97 483.97 512 449.446 512 L 62.554 512 C 28.03 512 0 483.97 0 449.446 L 0 62.554 C 0 28.03 28.029 0 62.554 0 L 449.446 0 C 483.971 0 512 28.03 512 62.554 Z M 269.951 190.75 L 182.567 75.216 L 56 75.216 L 207.216 272.95 L 63.9 436.783 L 125.266 436.783 L 235.9 310.383 L 332.567 436.783 L 456 436.783 L 298.367 228.367 L 432.367 75.216 L 371.033 75.216 Z M 127.633 110 L 164.101 110 L 383.481 400.065 L 349.5 400.065 Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share Low Rank Adaptation and all its variansts on linkedin"
+            href="https://www.linkedin.com/shareArticle?mini=true&amp;url=http%3a%2f%2flocalhost%3a1313%2fposts%2flow-rank-adaptation%2f&amp;title=Low%20Rank%20Adaptation%20and%20all%20its%20variansts&amp;summary=Low%20Rank%20Adaptation%20and%20all%20its%20variansts&amp;source=http%3a%2f%2flocalhost%3a1313%2fposts%2flow-rank-adaptation%2f">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-288.985,423.278l0,-225.717l-75.04,0l0,225.717l75.04,0Zm270.539,0l0,-129.439c0,-69.333 -37.018,-101.586 -86.381,-101.586c-39.804,0 -57.634,21.891 -67.617,37.266l0,-31.958l-75.021,0c0.995,21.181 0,225.717 0,225.717l75.02,0l0,-126.056c0,-6.748 0.486,-13.492 2.474,-18.315c5.414,-13.475 17.767,-27.434 38.494,-27.434c27.135,0 38.007,20.707 38.007,51.037l0,120.768l75.024,0Zm-307.552,-334.556c-25.674,0 -42.448,16.879 -42.448,39.002c0,21.658 16.264,39.002 41.455,39.002l0.484,0c26.165,0 42.452,-17.344 42.452,-39.002c-0.485,-22.092 -16.241,-38.954 -41.943,-39.002Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share Low Rank Adaptation and all its variansts on reddit"
+            href="https://reddit.com/submit?url=http%3a%2f%2flocalhost%3a1313%2fposts%2flow-rank-adaptation%2f&title=Low%20Rank%20Adaptation%20and%20all%20its%20variansts">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-3.446,265.638c0,-22.964 -18.616,-41.58 -41.58,-41.58c-11.211,0 -21.361,4.457 -28.841,11.666c-28.424,-20.508 -67.586,-33.757 -111.204,-35.278l18.941,-89.121l61.884,13.157c0.756,15.734 13.642,28.29 29.56,28.29c16.407,0 29.706,-13.299 29.706,-29.701c0,-16.403 -13.299,-29.702 -29.706,-29.702c-11.666,0 -21.657,6.792 -26.515,16.578l-69.105,-14.69c-1.922,-0.418 -3.939,-0.042 -5.585,1.036c-1.658,1.073 -2.811,2.761 -3.224,4.686l-21.152,99.438c-44.258,1.228 -84.046,14.494 -112.837,35.232c-7.468,-7.164 -17.589,-11.591 -28.757,-11.591c-22.965,0 -41.585,18.616 -41.585,41.58c0,16.896 10.095,31.41 24.568,37.918c-0.639,4.135 -0.99,8.328 -0.99,12.576c0,63.977 74.469,115.836 166.33,115.836c91.861,0 166.334,-51.859 166.334,-115.836c0,-4.218 -0.347,-8.387 -0.977,-12.493c14.564,-6.47 24.735,-21.034 24.735,-38.001Zm-119.474,108.193c-20.27,20.241 -59.115,21.816 -70.534,21.816c-11.428,0 -50.277,-1.575 -70.522,-21.82c-3.007,-3.008 -3.007,-7.882 0,-10.889c3.003,-2.999 7.882,-3.003 10.885,0c12.777,12.781 40.11,17.317 59.637,17.317c19.522,0 46.86,-4.536 59.657,-17.321c3.016,-2.999 7.886,-2.995 10.885,0.008c3.008,3.011 3.003,7.882 -0.008,10.889Zm-5.23,-48.781c-16.373,0 -29.701,-13.324 -29.701,-29.698c0,-16.381 13.328,-29.714 29.701,-29.714c16.378,0 29.706,13.333 29.706,29.714c0,16.374 -13.328,29.698 -29.706,29.698Zm-160.386,-29.702c0,-16.381 13.328,-29.71 29.714,-29.71c16.369,0 29.689,13.329 29.689,29.71c0,16.373 -13.32,29.693 -29.689,29.693c-16.386,0 -29.714,-13.32 -29.714,-29.693Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share Low Rank Adaptation and all its variansts on facebook"
+            href="https://facebook.com/sharer/sharer.php?u=http%3a%2f%2flocalhost%3a1313%2fposts%2flow-rank-adaptation%2f">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-106.468,0l0,-192.915l66.6,0l12.672,-82.621l-79.272,0l0,-53.617c0,-22.603 11.073,-44.636 46.58,-44.636l36.042,0l0,-70.34c0,0 -32.71,-5.582 -63.982,-5.582c-65.288,0 -107.96,39.569 -107.96,111.204l0,62.971l-72.573,0l0,82.621l72.573,0l0,192.915l-191.104,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share Low Rank Adaptation and all its variansts on whatsapp"
+            href="https://api.whatsapp.com/send?text=Low%20Rank%20Adaptation%20and%20all%20its%20variansts%20-%20http%3a%2f%2flocalhost%3a1313%2fposts%2flow-rank-adaptation%2f">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-58.673,127.703c-33.842,-33.881 -78.847,-52.548 -126.798,-52.568c-98.799,0 -179.21,80.405 -179.249,179.234c-0.013,31.593 8.241,62.428 23.927,89.612l-25.429,92.884l95.021,-24.925c26.181,14.28 55.659,21.807 85.658,21.816l0.074,0c98.789,0 179.206,-80.413 179.247,-179.243c0.018,-47.895 -18.61,-92.93 -52.451,-126.81Zm-126.797,275.782l-0.06,0c-26.734,-0.01 -52.954,-7.193 -75.828,-20.767l-5.441,-3.229l-56.386,14.792l15.05,-54.977l-3.542,-5.637c-14.913,-23.72 -22.791,-51.136 -22.779,-79.287c0.033,-82.142 66.867,-148.971 149.046,-148.971c39.793,0.014 77.199,15.531 105.329,43.692c28.128,28.16 43.609,65.592 43.594,105.4c-0.034,82.149 -66.866,148.983 -148.983,148.984Zm81.721,-111.581c-4.479,-2.242 -26.499,-13.075 -30.604,-14.571c-4.105,-1.495 -7.091,-2.241 -10.077,2.241c-2.986,4.483 -11.569,14.572 -14.182,17.562c-2.612,2.988 -5.225,3.364 -9.703,1.12c-4.479,-2.241 -18.91,-6.97 -36.017,-22.23c-13.314,-11.876 -22.304,-26.542 -24.916,-31.026c-2.612,-4.484 -0.279,-6.908 1.963,-9.14c2.016,-2.007 4.48,-5.232 6.719,-7.847c2.24,-2.615 2.986,-4.484 4.479,-7.472c1.493,-2.99 0.747,-5.604 -0.374,-7.846c-1.119,-2.241 -10.077,-24.288 -13.809,-33.256c-3.635,-8.733 -7.327,-7.55 -10.077,-7.688c-2.609,-0.13 -5.598,-0.158 -8.583,-0.158c-2.986,0 -7.839,1.121 -11.944,5.604c-4.105,4.484 -15.675,15.32 -15.675,37.364c0,22.046 16.048,43.342 18.287,46.332c2.24,2.99 31.582,48.227 76.511,67.627c10.685,4.615 19.028,7.371 25.533,9.434c10.728,3.41 20.492,2.929 28.209,1.775c8.605,-1.285 26.499,-10.833 30.231,-21.295c3.732,-10.464 3.732,-19.431 2.612,-21.298c-1.119,-1.869 -4.105,-2.99 -8.583,-5.232Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share Low Rank Adaptation and all its variansts on telegram"
+            href="https://telegram.me/share/url?text=Low%20Rank%20Adaptation%20and%20all%20its%20variansts&amp;url=http%3a%2f%2flocalhost%3a1313%2fposts%2flow-rank-adaptation%2f">
+            <svg version="1.1" xml:space="preserve" viewBox="2 2 28 28" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M26.49,29.86H5.5a3.37,3.37,0,0,1-2.47-1,3.35,3.35,0,0,1-1-2.47V5.48A3.36,3.36,0,0,1,3,3,3.37,3.37,0,0,1,5.5,2h21A3.38,3.38,0,0,1,29,3a3.36,3.36,0,0,1,1,2.46V26.37a3.35,3.35,0,0,1-1,2.47A3.38,3.38,0,0,1,26.49,29.86Zm-5.38-6.71a.79.79,0,0,0,.85-.66L24.73,9.24a.55.55,0,0,0-.18-.46.62.62,0,0,0-.41-.17q-.08,0-16.53,6.11a.59.59,0,0,0-.41.59.57.57,0,0,0,.43.52l4,1.24,1.61,4.83a.62.62,0,0,0,.63.43.56.56,0,0,0,.4-.17L16.54,20l4.09,3A.9.9,0,0,0,21.11,23.15ZM13.8,20.71l-1.21-4q8.72-5.55,8.78-5.55c.15,0,.23,0,.23.16a.18.18,0,0,1,0,.06s-2.51,2.3-7.52,6.8Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share Low Rank Adaptation and all its variansts on ycombinator"
+            href="https://news.ycombinator.com/submitlink?t=Low%20Rank%20Adaptation%20and%20all%20its%20variansts&u=http%3a%2f%2flocalhost%3a1313%2fposts%2flow-rank-adaptation%2f">
+            <svg version="1.1" xml:space="preserve" width="30px" height="30px" viewBox="0 0 512 512" fill="currentColor"
+                xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">
+                <path
+                    d="M449.446 0C483.971 0 512 28.03 512 62.554L512 449.446C512 483.97 483.97 512 449.446 512L62.554 512C28.03 512 0 483.97 0 449.446L0 62.554C0 28.03 28.029 0 62.554 0L449.446 0ZM183.8767 87.9921H121.8427L230.6673 292.4508V424.0079H281.3328V292.4508L390.1575 87.9921H328.1233L256 238.2489z" />
+            </svg>
+        </a>
+    </li>
+</ul>
+
   </footer>
 </article>
     </main>
@@ -316,13 +564,14 @@ Later on, there was the adapter methods, where a structure just like LoRA was in
         <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
     </span>
 
-<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-<span id="busuanzi_container">
-    &nbsp;
-    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
-    
-    Site Views: <span id="busuanzi_value_site_pv"></span>
-</span>
+
+
+<br>
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+<script defer src="https://busuanzi.9420.ltd/js"></script>
+
+Page Vistors <span id="busuanzi_page_uv"></span> &nbsp &bull; &nbsp
+Site Vistors <span id="busuanzi_site_uv"></span>
 
 
 </footer>
