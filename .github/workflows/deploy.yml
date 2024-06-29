@@ -46,7 +46,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: exampleSite
+          ref: main
+          submodules: true
+          fetch-depth: 0  # Fetch all history to ensure branches/tags are fully fetched
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v3
