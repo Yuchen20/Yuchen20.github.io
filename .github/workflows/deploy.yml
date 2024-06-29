@@ -36,7 +36,7 @@ jobs:
           enablement: true
         env:
           VERBOSE: true
-
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Get Theme
         run: git submodule update --init --recursive
       - name: Update theme to Latest commit
