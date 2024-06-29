@@ -35,14 +35,20 @@ jobs:
           tar -C ${RUNNER_TEMP} -zxvf /tmp/hugo.tar.gz hugo                    
       - name: Build
         run: ${RUNNER_TEMP}/hugo
-  # Deployment job
-      - name: Deploy
+      - name: Prepare Deployment Directory
+        run: |
+          mkdir -p ${GITHUB_WORKSPACE}/built-site
+
+      - name: Copy Files to Deployment Directory
+        run: |
+          cp -R ${GITHUB_WORKSPACE}/public/* ${GITHUB_WORKSPACE}/built-site/
+
+      - name: Deploy to GitHub Pages
         if: github.ref == 'refs/heads/main'
         run: |
-          cp -R public/* ${GITHUB_WORKSPACE}/built-site/
           cd ${GITHUB_WORKSPACE}/built-site
+          git config user.name 'Yuchen20'  # change to your username
+          git config user.email 'yuchenmao2024@163.com'  # change to your email
           git add .
-          git config user.name 'Yuchen20' # change to your username
-          git config user.email 'yuchenmao2024@163.com' # change to your email
           git commit -m 'Updated site'
-          git push                  
+          git push        
