@@ -8,9 +8,9 @@ enableEmoji: true
 
 params:
   homeInfoParams:
-    Title: "Haya, welcome to yuchen's block"
+    Title: "Haya, welcome to yuchen's blog"
     Content: "Hey, this is Yuchen, a self-motivated student trying to get into a phd program by 2025. Personally, I am interested in computer vision and efficient AI (partly due to my lack of GPU :smiling_face_with_tear:). This blog is mostly used as a place to document all my readings. Hopefully, you will enjoy this blog :)"
-    
+
   socialIcons:
     - name: "X"
       url: "https://twitter.com/Johnmao22297801"
