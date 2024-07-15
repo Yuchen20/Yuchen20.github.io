@@ -3,7 +3,7 @@ title = 'About Me'
 date = 2024-03-08T13:45:00Z
 
 author = ["Yuchen Mao"]
-enableEmoji: true
+enableEmoji = true
 draft = false
 math  = 'katex'
 weight= 1
