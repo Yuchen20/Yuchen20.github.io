@@ -1,5 +1,5 @@
 baseURL: https://Yuchen20.github.io/
-languageCode: en-us
+--languageCode: en-us
 title: Yuchen's Blog 
 theme: ["PaperMod"]
 
@@ -31,4 +31,8 @@ params:
   ShowReadingTime  : true
   ShowWordCount    : true
   ShowShareButtons : true
+    
+services:
+  googleAnalytics:
+    ID: G-8ZS2GXP7ET 
 

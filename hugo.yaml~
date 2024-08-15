@@ -1,12 +1,15 @@
-baseURL: https://example.org/
+baseURL: https://Yuchen20.github.io/
 languageCode: en-us
 title: Yuchen's Blog 
 theme: ["PaperMod"]
 
+enableEmoji: true
+
+
 params:
   homeInfoParams:
-    Title: "Haya, welcome to yuchen's block"
-    Content: "Hey, this is Yuchen, a self-motivated student trying to get into a phd program by 2025. Personally, I am interested in computer vision and efficient AI (partly due to my lack of GPU :smiling_face_with_tear:). This blog is mostly used as a place to document all my readings. Hopefully, you will enjoy this :smiling_face:"
+    Title: "Haya, welcome to yuchen's blog"
+    Content: "Hey, this is Yuchen, a self-motivated student trying to get into a phd program by 2025. Personally, I am interested in computer vision and efficient AI (partly due to my lack of GPU :smiling_face_with_tear:). This blog is mostly used as a place to document all my readings. Hopefully, you will enjoy this blog :)"
 
   socialIcons:
     - name: "X"
@@ -28,5 +31,4 @@ params:
   ShowReadingTime  : true
   ShowWordCount    : true
   ShowShareButtons : true
-  enableEmoji: true
 
